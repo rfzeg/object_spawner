@@ -17,11 +17,21 @@ def spawn_model(model_name):
     initial_pose.position.z = 0.5
 
     # Spawn SDF model
-    model_path = rospkg.RosPack().get_path('object_spawner')+'/models/'
-    model_xml = ''
+    try:
+        package_name = 'object_spawner'
+        model_path = rospkg.RosPack().get_path(package_name)+'/models/'
+        model_xml = ''
 
-    with open(model_path + model_name + '/model.sdf', 'r') as xml_file:
-        model_xml = xml_file.read().replace('\n', '')
+    except rospkg.ResourceNotFound as e:
+        rospy.logerr("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, e))
+
+    try:
+        with open(model_path + model_name + '/model.sdf', 'r') as xml_file:
+            model_xml = xml_file.read().replace('\n', '')
+    except IOError as err:
+        rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_name,err))
+    except UnboundLocalError as error:
+        rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
     try:
         rospy.wait_for_service('gazebo/spawn_urdf_model',5.0)
@@ -36,6 +46,8 @@ def spawn_model(model_name):
 
     except (rospy.ServiceException, rospy.ROSException), e:
         rospy.logerr("Service call failed: %s" % (e,))
+    except UnboundLocalError as error:
+        rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
 if __name__ == '__main__':
 
