@@ -27,7 +27,12 @@ def spawn_model(model_name):
         rospy.wait_for_service('gazebo/spawn_urdf_model',5.0)
         spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
         # then use this handle just like a normal function and call it
-        spawn_model_prox('auto_spawned_model_name',model_xml, '', initial_pose, 'world')
+        res = spawn_model_prox('auto_spawned_model_name',model_xml, '', initial_pose, 'world')
+        # evaluate response
+        if res.success == True:
+            rospy.loginfo(res.status_message + " " + model_name)
+        else:
+            rospy.logerr("Error: model %s not spawn, error message = "% model_name + res.status_message)
 
     except (rospy.ServiceException, rospy.ROSException), e:
         rospy.logerr("Service call failed: %s" % (e,))
