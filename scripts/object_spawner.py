@@ -37,17 +37,38 @@ def spawn_model(model_name,model_type):
             rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
         try:
+            rospy.loginfo("Waiting for service gazebo/spawn_sdf_model")
             # block max. 5 seconds until the service is available
             rospy.wait_for_service('gazebo/spawn_sdf_model',5.0)
             # create a handle for calling the service
             spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
         except (rospy.ServiceException, rospy.ROSException), e:
             rospy.logerr("Service call failed: %s" % (e,))
+
+    elif model_type == "urdf":
+        try:
+            model_path = rospkg.RosPack().get_path(package_name)+'/urdf/'
+            file_xml = open(model_path + model_name + '.' + model_type, 'r')
+            model_xml = file_xml.read()
+        except IOError as err:
+            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_name,err))
+        except UnboundLocalError as error:
+            rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
+
+        try:
+            rospy.loginfo("Waiting for service gazebo/spawn_urdf_model")
+            # block max. 5 seconds until the service is available
+            rospy.wait_for_service('gazebo/spawn_urdf_model')
+            # create a handle for calling the service
+            spawn_model_prox = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
+        except (rospy.ServiceException, rospy.ROSException), e:
+            rospy.logerr("Service call failed: %s" % (e,))
+
     else:
         rospy.logerr("Error: Model type not know, model_type = " + model_type)
 
     try:
-        # use handle just like a normal function and call it
+        # use handle / local proxy just like a normal function and call it
         res = spawn_model_prox('auto_spawned_model_name',model_xml, '', initial_pose, 'world')
         # evaluate response
         if res.success == True:
@@ -63,4 +84,4 @@ if __name__ == '__main__':
     # ROS node initialization
     rospy.init_node('object_spawner', log_level=rospy.INFO)
 
-    spawn_model('coke_can','sdf')
+    spawn_model('column','urdf')
