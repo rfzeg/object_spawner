@@ -69,7 +69,7 @@ def spawn_model(model_name,model_type):
 
     try:
         # use handle / local proxy just like a normal function and call it
-        res = spawn_model_prox('auto_spawned_model_name',model_xml, '', initial_pose, 'world')
+        res = spawn_model_prox(model_name,model_xml, '', initial_pose, 'world')
         # evaluate response
         if res.success == True:
             # SpawnModel: Successfully spawned entity 'model_name'
@@ -84,4 +84,12 @@ if __name__ == '__main__':
     # ROS node initialization
     rospy.init_node('object_spawner', log_level=rospy.INFO)
 
-    spawn_model('column','urdf')
+    spawn_model('wood_cube_10cm','sdf')
+
+    # sleep for duration (seconds, nsecs)
+    d = rospy.Duration(2, 0)
+    rospy.sleep(d)
+
+    spawn_model('coke_can','sdf')
+
+
