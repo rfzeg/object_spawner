@@ -6,18 +6,14 @@ from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose
 
 
-def spawn_model(model_name,model_type):
-    """ Spawns a model in a particular position
+def spawn_model(model_name,model_type,model_pose):
+    """ Spawns a model in a particular position and orientation
         Args:
-        name of the model (as in folder and model.config file)
-        type of model (refers to format: sdf or other)
+        name of the model (string, as in folder and model.config file)
+        type of model (string, refers to format: sdf or urdf)
+        pose of the model (geometry_msgs pose() object)
         Returns: None
     """
-    initial_pose = Pose()
-    initial_pose.position.x = 0
-    initial_pose.position.y = 0
-    initial_pose.position.z = 0.5
-
     package_name = 'object_spawner'
 
     # Spawn SDF model
@@ -69,7 +65,7 @@ def spawn_model(model_name,model_type):
 
     try:
         # use handle / local proxy just like a normal function and call it
-        res = spawn_model_prox(model_name,model_xml, '', initial_pose, 'world')
+        res = spawn_model_prox(model_name,model_xml, '',model_pose, 'world')
         # evaluate response
         if res.success == True:
             # SpawnModel: Successfully spawned entity 'model_name'
@@ -84,12 +80,24 @@ if __name__ == '__main__':
     # ROS node initialization
     rospy.init_node('object_spawner', log_level=rospy.INFO)
 
-    spawn_model('wood_cube_10cm','sdf')
+    ###### usage example
+
+    cube_pose = Pose()
+    cube_pose.position.x = 0.5
+    cube_pose.position.y = 0
+    cube_pose.position.z = 0.2    
+
+    spawn_model('wood_cube_10cm','sdf',cube_pose)
 
     # sleep for duration (seconds, nsecs)
     d = rospy.Duration(2, 0)
     rospy.sleep(d)
 
-    spawn_model('coke_can','sdf')
+    coke_pose = Pose()
+    coke_pose.position.x = 0
+    coke_pose.position.y = 0
+    coke_pose.position.z = 0.25 
+
+    spawn_model('coke_can','sdf',coke_pose)
 
 
