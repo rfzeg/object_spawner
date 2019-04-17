@@ -4,20 +4,67 @@ import rospy
 import rospkg
 from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose
+from yaml import load
 
+class Model(object):
+    def __init__(self, **entries): 
+        self.__dict__.update(entries)
 
-def spawn_model(model_name,model_type,model_pose):
+    def __repr__(self):
+       return '{}({!r}, {!r}, {!r})'.format(
+           self.__class__.__name__,
+           self.name,self.type,self.package)
+
+    def __unicode__(self):
+        return u'name: %s, type: %s, package: %s' % (self.name,self.type,self.package)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+def parse_yaml(package_name,yaml_filename):
+    """ Parse a yaml into a dict of objects containing all data to spawn models
+        Args:
+        name of the package (string, refers to package where yaml file is located)
+        name of the yaml file (string, complete name incl. file extension)
+        Returns: dictionary with model objects
+    """
+    complete_path = rospkg.RosPack().get_path(package_name)+'/config/'+yaml_filename
+    f = open(complete_path, 'r')
+    # populate dictionary that equals to the yaml file tree data
+    yaml_dict = load(f)
+
+    # create a list of the names of all models parsed
+    modelNames = [yaml_dict['models'][k]['name'] for k in range(len(yaml_dict['models']))]
+    
+    rospy.loginfo("List of model names: %s" % modelNames)
+    rospy.logdebug("Total number of models: ", len(yaml_dict['models']))
+
+    # create a dict of Model objects where each key is the name of the model
+    model_dict = {name: Model() for name in modelNames}
+    # create list containing all nested dictionaries that hold data about each model   
+    list_of_dict = [x for x in yaml_dict['models']]
+    # parse YAML dictionary entries to Model class object attributes
+    for idx, name in enumerate(modelNames):
+        args = list_of_dict[idx]
+        model_dict[name] = Model(**args)
+
+    return model_dict
+
+def spawn_model(model_object):
     """ Spawns a model in a particular position and orientation
         Args:
-        name of the model (string, as in folder and model.config file)
-        type of model (string, refers to format: sdf or urdf)
-        pose of the model (geometry_msgs pose() object)
+        - model object containing name, type, package and pose of the model
         Returns: None
     """
-    package_name = 'object_spawner'
+    # unpack object attributes
+    package_name = model_object.package
+    spawn_pose = Pose()
+    spawn_pose.position.x = model_object.pose[0]
+    spawn_pose.position.y = model_object.pose[1]
+    spawn_pose.position.z = model_object.pose[2]
 
     # Spawn SDF model
-    if model_type == 'sdf':
+    if model_object.type == 'sdf':
         try:
             model_path = rospkg.RosPack().get_path(package_name)+'/models/'
             model_xml = ''
@@ -25,15 +72,15 @@ def spawn_model(model_name,model_type,model_pose):
             rospy.logerr("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, e))
 
         try:
-            with open(model_path + model_name + '/model.sdf', 'r') as xml_file:
+            with open(model_path + model_object.name + '/model.sdf', 'r') as xml_file:
                 model_xml = xml_file.read().replace('\n', '')
         except IOError as err:
-            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_name,err))
+            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_object.name,err))
         except UnboundLocalError as error:
             rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
         try:
-            rospy.loginfo("Waiting for service gazebo/spawn_sdf_model")
+            rospy.logdebug("Waiting for service gazebo/spawn_sdf_model")
             # block max. 5 seconds until the service is available
             rospy.wait_for_service('gazebo/spawn_sdf_model',5.0)
             # create a handle for calling the service
@@ -44,15 +91,15 @@ def spawn_model(model_name,model_type,model_pose):
     elif model_type == "urdf":
         try:
             model_path = rospkg.RosPack().get_path(package_name)+'/urdf/'
-            file_xml = open(model_path + model_name + '.' + model_type, 'r')
+            file_xml = open(model_path + model_object.name + '.' + model_object.type, 'r')
             model_xml = file_xml.read()
         except IOError as err:
-            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_name,err))
+            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_object.name,err))
         except UnboundLocalError as error:
             rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
         try:
-            rospy.loginfo("Waiting for service gazebo/spawn_urdf_model")
+            rospy.logdebug("Waiting for service gazebo/spawn_urdf_model")
             # block max. 5 seconds until the service is available
             rospy.wait_for_service('gazebo/spawn_urdf_model')
             # create a handle for calling the service
@@ -61,43 +108,37 @@ def spawn_model(model_name,model_type,model_pose):
             rospy.logerr("Service call failed: %s" % (e,))
 
     else:
-        rospy.logerr("Error: Model type not know, model_type = " + model_type)
+        rospy.logerr("Error: Model type not know, model_type = " + model_object.type)
 
     try:
         # use handle / local proxy just like a normal function and call it
-        res = spawn_model_prox(model_name,model_xml, '',model_pose, 'world')
+        res = spawn_model_prox(model_object.name,model_xml, '',spawn_pose, 'world')
         # evaluate response
         if res.success == True:
             # SpawnModel: Successfully spawned entity 'model_name'
-            rospy.loginfo(res.status_message + " " + model_name)
+            rospy.loginfo(res.status_message + " " + model_object.name)
         else:
-            rospy.logerr("Error: model %s not spawn, error message = "% model_name + res.status_message)
+            rospy.logerr("Error: model %s not spawn, error message = "% model_object.name + res.status_message)
     except UnboundLocalError as error:
         rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
 if __name__ == '__main__':
 
     # ROS node initialization
-    rospy.init_node('object_spawner', log_level=rospy.INFO)
+    rospy.init_node('object_spawner_node', log_level=rospy.INFO)
 
     ###### usage example
-
-    cube_pose = Pose()
-    cube_pose.position.x = 0.5
-    cube_pose.position.y = 0
-    cube_pose.position.z = 0.2    
-
-    spawn_model('wood_cube_10cm','sdf',cube_pose)
+    
+    # parse yaml file to dictionary of Model objects
+    cfg_package_name = 'object_spawner'
+    cfg_yaml_filename = 'models.yaml'
+    m = parse_yaml(cfg_package_name,cfg_yaml_filename) # create dict called 'm'
+ 
+    spawn_model(m['wood_cube_10cm'])
 
     # sleep for duration (seconds, nsecs)
     d = rospy.Duration(2, 0)
     rospy.sleep(d)
 
-    coke_pose = Pose()
-    coke_pose.position.x = 0
-    coke_pose.position.y = 0
-    coke_pose.position.z = 0.25 
-
-    spawn_model('coke_can','sdf',coke_pose)
-
-
+    #coke = Model(model_name,model_type,model_pkg_name,coke_pose)
+    spawn_model(m['coke_can'])

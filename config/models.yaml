@@ -1,0 +1,9 @@
+models:
+  - name: wood_cube_10cm
+    type: sdf
+    package: object_spawner
+    pose: [0.5,1.0,0.2,0.0,0.0,45.0] # x,y,z,R,P,Y (in degrees)
+  - name: coke_can
+    type: sdf
+    package: object_spawner    
+    pose: [0.0,0.0,0.25,90.0,0.0,0.0] # x,y,z,R,P,Y (in degrees)
