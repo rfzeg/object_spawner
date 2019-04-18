@@ -23,6 +23,20 @@ class Model(object):
     def __str__(self):
         return unicode(self).encode('utf-8')
 
+def rename_duplicates( old ):
+    """
+    Append count numbers to duplicate names in a list
+    So new list only contains unique names
+    """
+    seen = {}
+    for x in old:
+        if x in seen:
+            seen[x] += 1
+            yield "%s_%d" % (x, seen[x])
+        else:
+            seen[x] = 0
+            yield x
+
 def parse_yaml(package_name,yaml_filename):
     """ Parse a yaml into a dict of objects containing all data to spawn models
         Args:
@@ -37,18 +51,26 @@ def parse_yaml(package_name,yaml_filename):
 
     # create a list of the names of all models parsed
     modelNames = [yaml_dict['models'][k]['name'] for k in range(len(yaml_dict['models']))]
+    # create new list with count numbers on all names that were duplicated
+    modelNamesUnique = list(rename_duplicates(modelNames))
     
-    rospy.loginfo("List of model names: %s" % modelNames)
+    rospy.loginfo("List of model names: %s" % modelNamesUnique)
     rospy.logdebug("Total number of models: ", len(yaml_dict['models']))
 
     # create a dict of Model objects where each key is the name of the model
-    model_dict = {name: Model() for name in modelNames}
+    model_dict = {name: Model() for name in modelNamesUnique}
     # create list containing all nested dictionaries that hold data about each model   
     list_of_dict = [x for x in yaml_dict['models']]
     # parse YAML dictionary entries to Model class object attributes
-    for idx, name in enumerate(modelNames):
+    for idx, name in enumerate(modelNamesUnique):
         args = list_of_dict[idx]
         model_dict[name] = Model(**args)
+
+    # add a unique model name that can be used to spawn an model in simulation
+    count = 0
+    for dict_key, mod_obj in model_dict.iteritems():
+        mod_obj.unique_name = modelNamesUnique[count] # add attribute 'unique_name'
+        count += 1
 
     return model_dict
 
@@ -125,11 +147,12 @@ def spawn_model(model_object):
 
     try:
         # use handle / local proxy just like a normal function and call it
-        res = spawn_model_prox(model_object.name,model_xml, '',spawn_pose, 'world')
+        print "Now spawning: %s" % model_object.unique_name
+        res = spawn_model_prox(model_object.unique_name,model_xml, '',spawn_pose, 'world')
         # evaluate response
         if res.success == True:
             # SpawnModel: Successfully spawned entity 'model_name'
-            rospy.loginfo(res.status_message + " " + model_object.name)
+            rospy.loginfo(res.status_message + " " + model_object.name + " as " + model_object.unique_name)
         else:
             rospy.logerr("Error: model %s not spawn, error message = "% model_object.name + res.status_message)
     except UnboundLocalError as error:
@@ -155,3 +178,10 @@ if __name__ == '__main__':
 
     #coke = Model(model_name,model_type,model_pkg_name,coke_pose)
     spawn_model(m['coke_can'])
+
+    # sleep for duration (seconds, nsecs)
+    d = rospy.Duration(2, 0)
+    rospy.sleep(d)
+
+    #coke = Model(model_name,model_type,model_pkg_name,coke_pose)
+    spawn_model(m['coke_can_1'])
