@@ -5,6 +5,8 @@ import rospkg
 from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose
 from yaml import load
+from tf.transformations import quaternion_from_euler
+from math import pi
 
 class Model(object):
     def __init__(self, **entries): 
@@ -56,13 +58,24 @@ def spawn_model(model_object):
         - model object containing name, type, package and pose of the model
         Returns: None
     """
-    # unpack object attributes
+    ## unpack object attributes
     package_name = model_object.package
     spawn_pose = Pose()
     spawn_pose.position.x = model_object.pose[0]
     spawn_pose.position.y = model_object.pose[1]
     spawn_pose.position.z = model_object.pose[2]
-
+    # conversion from Euler angles (RPY) in degrees to radians
+    degrees2rad = pi / 180.0
+    roll = model_object.pose[3] * degrees2rad
+    pitch = model_object.pose[4] * degrees2rad
+    yaw = model_object.pose[5] * degrees2rad
+    # create list that contains conversion from Euler to Quaternions
+    quat = quaternion_from_euler (roll,pitch,yaw)
+    spawn_pose.orientation.x = quat[0]
+    spawn_pose.orientation.y = quat[1]
+    spawn_pose.orientation.z = quat[2]
+    spawn_pose.orientation.w = quat[3]
+    
     # Spawn SDF model
     if model_object.type == 'sdf':
         try:
