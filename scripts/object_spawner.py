@@ -110,7 +110,7 @@ def spawn_model(model_object):
             with open(model_path + model_object.name + '/model.sdf', 'r') as xml_file:
                 model_xml = xml_file.read().replace('\n', '')
         except IOError as err:
-            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_object.name,err))
+            rospy.logerr("Cannot find or open model [1] [%s], check model name and that model exists, I/O error message:  %s"%(model_object.name,err))
         except UnboundLocalError as error:
             rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
@@ -123,13 +123,13 @@ def spawn_model(model_object):
         except (rospy.ServiceException, rospy.ROSException), e:
             rospy.logerr("Service call failed: %s" % (e,))
 
-    elif model_type == "urdf":
+    elif model_object.type == "urdf":
         try:
             model_path = rospkg.RosPack().get_path(package_name)+'/urdf/'
             file_xml = open(model_path + model_object.name + '.' + model_object.type, 'r')
             model_xml = file_xml.read()
         except IOError as err:
-            rospy.logerr("Cannot find model [%s], check model name and that model exists, I/O error message:  %s"%(model_object.name,err))
+            rospy.logerr("Cannot find model [2] [%s], check model name and that model exists, I/O error message:  %s"%(model_object.name,err))
         except UnboundLocalError as error:
             rospy.logdebug("Cannot find package [%s], check package name and that package exists, error message:  %s"%(package_name, error))
 
@@ -170,18 +170,10 @@ if __name__ == '__main__':
     cfg_yaml_filename = 'models.yaml'
     m = parse_yaml(cfg_package_name,cfg_yaml_filename) # create dict called 'm'
  
-    spawn_model(m['wood_cube_10cm'])
-
-    # sleep for duration (seconds, nsecs)
-    d = rospy.Duration(2, 0)
-    rospy.sleep(d)
-
-    #coke = Model(model_name,model_type,model_pkg_name,coke_pose)
-    spawn_model(m['coke_can'])
-
-    # sleep for duration (seconds, nsecs)
-    d = rospy.Duration(2, 0)
-    rospy.sleep(d)
-
-    #coke = Model(model_name,model_type,model_pkg_name,coke_pose)
-    spawn_model(m['coke_can_1'])
+    
+    # spawn all models parsed from yaml file
+    for key in m:
+        spawn_model(m[key])
+        # sleep for duration (seconds, nsecs)
+        d = rospy.Duration(2, 0)
+        rospy.sleep(d)
