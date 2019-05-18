@@ -37,14 +37,14 @@ def rename_duplicates( old ):
             seen[x] = 0
             yield x
 
-def parse_yaml(package_name,yaml_filename):
+def parse_yaml(package_name,yaml_relative_path):
     """ Parse a yaml into a dict of objects containing all data to spawn models
         Args:
         name of the package (string, refers to package where yaml file is located)
-        name of the yaml file (string, complete name incl. file extension)
+        name and path of the yaml file (string, relative path + complete name incl. file extension)
         Returns: dictionary with model objects
     """
-    complete_path = rospkg.RosPack().get_path(package_name)+'/config/'+yaml_filename
+    complete_path = rospkg.RosPack().get_path(package_name)+yaml_relative_path
     f = open(complete_path, 'r')
     # populate dictionary that equals to the yaml file tree data
     yaml_dict = load(f)
@@ -165,10 +165,11 @@ if __name__ == '__main__':
 
     ###### usage example
     
+    # retrieve from param server filename and path to yaml file containing all the info required to spawn models
+    yaml_package_name = rospy.get_param('~yaml_package_name', 'object_spawner')
+    yaml_relative_path = rospy.get_param('~yaml_relative_path', '/config/models.yaml')
     # parse yaml file to dictionary of Model objects
-    cfg_package_name = 'object_spawner'
-    cfg_yaml_filename = 'models.yaml'
-    m = parse_yaml(cfg_package_name,cfg_yaml_filename) # create dict called 'm'
+    m = parse_yaml(yaml_package_name,yaml_relative_path) # create dict called 'm'
  
     
     # spawn all models parsed from yaml file
