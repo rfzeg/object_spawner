@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    
+  <env name="GAZEBO_MODEL_PATH" value="$(find sortation_system)/models/" />
+
+  <!-- Arguments that can be passed to this launch file from the CLI, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="physics" default="ode"/>
+  <arg name="extra_gazebo_args" default="--verbose"/>
+
+  <!-- Change the name of the world to be launched as required -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <!--<arg name="world_name" value="$(find object_spawner)/worlds/object_spawner.world"/>-->
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)"/>
+    <arg name="physics" default="$(arg physics)"/>
+  </include>
+
+  <!-- Arguments for object_spawner node with defaults provided -->
+  <!-- The name of the package where the .yaml cfg file is located -->
+  <arg name="yaml_package_name" default="object_spawner"/>
+  <!-- The relative path of the .yaml cfg file (inside the package just defined above) -->
+  <arg name="yaml_relative_path" default="/config/models.yaml"/>
+  <node name="object_spawner_node" pkg="object_spawner" type="object_spawner.py" output="screen">
+    <!-- Load path of yaml file to parameter server -->
+    <param name="yaml_package_name" type="string" value="$(arg yaml_package_name)"/>
+    <param name="yaml_relative_path" type="string" value="$(arg yaml_relative_path)"/>
+  </node>
+
+</launch>
