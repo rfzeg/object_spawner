@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Launches object spawner node -->
+<!-- Requires a running Gazebo simulation -->
+
 <launch>
-    
-<!-- Requires a Gazebo simulation running -->
 
   <!-- Arguments for object_spawner node with defaults provided -->
   <!-- The name of the package where the .yaml cfg file is located -->
@@ -9,14 +10,16 @@
   <!-- The relative path of the .yaml cfg file (inside the package just defined above) -->
   <arg name="yaml_relative_path" default="/config/models.yaml"/>
   <!-- Boolean value that indicates whether to spawn a models in random order or iterate the dictionary (arbitrarily unordered) -->
-  <arg name="random_order" default="false"/> <!-- set "true" or "false" -->
+  <arg name="random_order" default="false"/> <!-- set "true" or "false" (not case-sensitive) -->
+  <!-- Spawn next object after the specified time period (in seconds) -->
+  <arg name="time_interval" default="1.0"/>
 
   <node name="object_spawner_node" pkg="object_spawner" type="object_spawner.py" output="screen">
     <!-- Load node configuration parameters to parameter server -->
     <param name="yaml_package_name" type="string" value="$(arg yaml_package_name)"/>
     <param name="yaml_relative_path" type="string" value="$(arg yaml_relative_path)"/>
     <param name="random_order" type="bool" value="$(arg random_order)"/>
-
+    <param name="time_interval" type="double" value="$(arg time_interval)"/>
   </node>
 
 </launch>

@@ -171,6 +171,7 @@ if __name__ == '__main__':
     yaml_package_name = rospy.get_param('~yaml_package_name', 'object_spawner')
     yaml_relative_path = rospy.get_param('~yaml_relative_path', '/config/models.yaml')
     random_order = rospy.get_param('~random_order', 'false')
+    time_interval = rospy.get_param('~time_interval', 1.0)
     # parse yaml file to dictionary of Model objects
     m = parse_yaml(yaml_package_name,yaml_relative_path) # create dict called 'm'
    
@@ -182,7 +183,7 @@ if __name__ == '__main__':
                 # remove item form dict
                 del m[key]
                 # sleep for duration (seconds, nsecs)
-                d = rospy.Duration(2, 0)
+                d = rospy.Duration(time_interval)
                 rospy.sleep(d)
             # to silence "sys.excepthook is missing" error
             sys.stdout.flush() 
@@ -193,5 +194,5 @@ if __name__ == '__main__':
         for key in m:
             spawn_model(m[key])
             # sleep for duration (seconds, nsecs)
-            d = rospy.Duration(2, 0)
+            d = rospy.Duration(time_interval)
             rospy.sleep(d)
