@@ -7,6 +7,8 @@ from geometry_msgs.msg import Pose
 from yaml import load
 from tf.transformations import quaternion_from_euler
 from math import pi
+import random
+import sys
 
 class Model(object):
     def __init__(self, **entries): 
@@ -165,16 +167,31 @@ if __name__ == '__main__':
 
     ###### usage example
     
-    # retrieve from param server filename and path to yaml file containing all the info required to spawn models
+    # retrieve node configuration variables from param server
     yaml_package_name = rospy.get_param('~yaml_package_name', 'object_spawner')
     yaml_relative_path = rospy.get_param('~yaml_relative_path', '/config/models.yaml')
+    random_order = rospy.get_param('~random_order', 'false')
     # parse yaml file to dictionary of Model objects
     m = parse_yaml(yaml_package_name,yaml_relative_path) # create dict called 'm'
- 
-    
-    # spawn all models parsed from yaml file
-    for key in m:
-        spawn_model(m[key])
-        # sleep for duration (seconds, nsecs)
-        d = rospy.Duration(2, 0)
-        rospy.sleep(d)
+   
+    if random_order == True:
+        ## spawn a random model parsed from yaml file
+        try:    
+            for key in random.sample(m.keys(), len(m)):
+                spawn_model(m[key])
+                # remove item form dict
+                del m[key]
+                # sleep for duration (seconds, nsecs)
+                d = rospy.Duration(2, 0)
+                rospy.sleep(d)
+            # to silence "sys.excepthook is missing" error
+            sys.stdout.flush() 
+        except:
+            pass
+    else:
+        ## spawn all models parsed from yaml file iterating through the dict (unordered sequence, as they were stored)
+        for key in m:
+            spawn_model(m[key])
+            # sleep for duration (seconds, nsecs)
+            d = rospy.Duration(2, 0)
+            rospy.sleep(d)
