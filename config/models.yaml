@@ -1,13 +1,77 @@
 models:
-  - name: wood_cube_10cm
+  - name: beer
     type: sdf
     package: object_spawner
-    pose: [0.5,1.0,0.2,0.0,0.0,45.0] # x,y,z,R,P,Y (in degrees)
+    pose: [-5.74814, -5.68642, 0, 0, -0, 0]
   - name: coke_can
     type: sdf
-    package: object_spawner    
-    pose: [0.0,0.0,0.25,90.0,0.0,0.0] # x,y,z,R,P,Y (in degrees)
+    package: object_spawner
+    pose: [-16.4248, -5.68229, -0.000383, 0.015662, -0.021196, -0.000741]
   - name: coke_can
     type: sdf
-    package: object_spawner    
-    pose: [0.5,0.0,0.25,45.0,0.0,135.0] # x,y,z,R,P,Y (in degrees)
+    package: object_spawner
+    pose: [-17.2092, -5.30964, 0.000282, 0.032542, -0.028979, -0.000514]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-17.6281, -4.5394, -0.000383, 0.015662, -0.021196, -0.000976]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-17.5668, 2.43059, -0.000368, 0.01676, -0.019852, -0.000694]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-17.3788, 3.56033, 0.009203, -0.3996, 0.205135, -0.032425]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-16.4476, 3.72063, -0.000376, 0.017238, -0.017673, -0.00092]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-12.8526, 3.81549, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-12.0274, 3.41691, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-11.7548, 2.61825, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-11.6019, 1.64081, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-11.0639, 0.933739, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-10.4343, 0.433992, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-9.32338, 0.217223, 0, 0, -0, 0]
+  - name: beer
+    type: sdf
+    package: object_spawner
+    pose: [-5.98785, 0.168533, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-4.9614, -0.074909, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-4.52738, -0.797684, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-4.62543, -4.50662, 0, 0, -0, 0]
+  - name: coke_can
+    type: sdf
+    package: object_spawner
+    pose: [-4.8518, -5.27136, 0, 0, -0, 0]
