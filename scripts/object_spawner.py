@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import rospkg
@@ -70,7 +70,7 @@ def parse_yaml(package_name,yaml_relative_path):
 
     # add a unique model name that can be used to spawn an model in simulation
     count = 0
-    for dict_key, mod_obj in model_dict.iteritems():
+    for dict_key, mod_obj in model_dict.items():
         mod_obj.unique_name = modelNamesUnique[count] # add attribute 'unique_name'
         count += 1
 
@@ -122,7 +122,7 @@ def spawn_model(model_object):
             rospy.wait_for_service('gazebo/spawn_sdf_model',5.0)
             # create a handle for calling the service
             spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
-        except (rospy.ServiceException, rospy.ROSException), e:
+        except (rospy.ServiceException, rospy.ROSException) as e:
             rospy.logerr("Service call failed: %s" % (e,))
 
     elif model_object.type == "urdf":
@@ -141,7 +141,7 @@ def spawn_model(model_object):
             rospy.wait_for_service('gazebo/spawn_urdf_model')
             # create a handle for calling the service
             spawn_model_prox = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
-        except (rospy.ServiceException, rospy.ROSException), e:
+        except (rospy.ServiceException, rospy.ROSException) as e:
             rospy.logerr("Service call failed: %s" % (e,))
 
     else:
@@ -149,7 +149,7 @@ def spawn_model(model_object):
 
     try:
         # use handle / local proxy just like a normal function and call it
-        print "Now spawning: %s" % model_object.unique_name
+        print("Now spawning: %s" % model_object.unique_name)
         res = spawn_model_prox(model_object.unique_name,model_xml, '',spawn_pose, 'world')
         # evaluate response
         if res.success == True:
