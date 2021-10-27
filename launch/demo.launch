@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     
-  <env name="GAZEBO_MODEL_PATH" value="$(find sortation_system)/models/" />
+  <env name="GAZEBO_MODEL_PATH" value="$(find object_spawner)/models/" />
 
   <!-- Arguments that can be passed to this launch file from the CLI, for example paused:=true -->
   <arg name="paused" default="false"/>
