@@ -10,6 +10,7 @@ from math import pi
 import random
 import sys
 
+
 class Model(object):
     def __init__(self, **entries): 
         self.__dict__.update(entries)
@@ -88,13 +89,20 @@ def spawn_model(model_object):
     spawn_pose.position.x = model_object.pose[0]
     spawn_pose.position.y = model_object.pose[1]
     spawn_pose.position.z = model_object.pose[2]
-    # conversion from Euler angles (RPY) in degrees to radians
-    degrees2rad = pi / 180.0
-    roll = model_object.pose[3] * degrees2rad
-    pitch = model_object.pose[4] * degrees2rad
-    yaw = model_object.pose[5] * degrees2rad
-    # create list that contains conversion from Euler to Quaternions
-    quat = quaternion_from_euler (roll,pitch,yaw)
+    if model_object.quaternion:
+        quat = model_object.pose[3:]
+    else:
+        # conversion from Euler angles (RPY) in degrees or radians
+        roll = model_object.pose[3]
+        pitch = model_object.pose[4]
+        yaw = model_object.pose[5]
+        if not model_object.radians:
+            degrees2rad: float = pi / 180.0
+            roll *= degrees2rad
+            pitch *= degrees2rad
+            yaw *= degrees2rad
+        # create list that contains conversion from Euler to Quaternions
+        quat = quaternion_from_euler(roll, pitch, yaw)
     spawn_pose.orientation.x = quat[0]
     spawn_pose.orientation.y = quat[1]
     spawn_pose.orientation.z = quat[2]
