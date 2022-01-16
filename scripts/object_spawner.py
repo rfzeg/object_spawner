@@ -190,9 +190,10 @@ if __name__ == '__main__':
                 spawn_model(m[key])
                 # remove item form dict
                 del m[key]
-                # sleep for duration (seconds, nsecs)
-                d = rospy.Duration(time_interval)
-                rospy.sleep(d)
+                if time_interval > 0:
+                    # sleep for duration (seconds, nsecs)
+                    d = rospy.Duration(time_interval)
+                    rospy.sleep(d)
             # to silence "sys.excepthook is missing" error
             sys.stdout.flush() 
         except:
@@ -201,6 +202,7 @@ if __name__ == '__main__':
         ## spawn all models parsed from yaml file iterating through the dict (unordered sequence, as they were stored)
         for key in m:
             spawn_model(m[key])
-            # sleep for duration (seconds, nsecs)
-            d = rospy.Duration(time_interval)
-            rospy.sleep(d)
+            if time_interval > 0:
+                # sleep for duration (seconds, nsecs)
+                d = rospy.Duration(time_interval)
+                rospy.sleep(d)
