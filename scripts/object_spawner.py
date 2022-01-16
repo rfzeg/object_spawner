@@ -89,15 +89,15 @@ def spawn_model(model_object):
     spawn_pose.position.x = model_object.pose[0]
     spawn_pose.position.y = model_object.pose[1]
     spawn_pose.position.z = model_object.pose[2]
-    if model_object.quaternion:
+    if hasattr(model_object, 'quaternion') and model_object.quaternion:
         quat = model_object.pose[3:]
     else:
         # conversion from Euler angles (RPY) in degrees or radians
         roll = model_object.pose[3]
         pitch = model_object.pose[4]
         yaw = model_object.pose[5]
-        if not model_object.radians:
-            degrees2rad: float = pi / 180.0
+        if not hasattr(model_object, 'radians') or not model_object.radians:
+            degrees2rad = pi / 180.0
             roll *= degrees2rad
             pitch *= degrees2rad
             yaw *= degrees2rad
