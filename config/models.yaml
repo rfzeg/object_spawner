@@ -2,6 +2,12 @@ models:
   - name: beer
     type: sdf
     package: object_spawner
+    quaternion: False
+    radians: False
+    pose: [1, 1, 0, 90, 0, 0]
+  - name: beer
+    type: sdf
+    package: object_spawner
     pose: [-5.74814, -5.68642, 0, 0, -0, 0]
   - name: coke_can
     type: sdf

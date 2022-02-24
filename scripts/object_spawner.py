@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 import rospy
 import rospkg
@@ -9,6 +9,7 @@ from tf.transformations import quaternion_from_euler
 from math import pi
 import random
 import sys
+
 
 class Model(object):
     def __init__(self, **entries): 
@@ -70,7 +71,7 @@ def parse_yaml(package_name,yaml_relative_path):
 
     # add a unique model name that can be used to spawn an model in simulation
     count = 0
-    for dict_key, mod_obj in model_dict.iteritems():
+    for dict_key, mod_obj in model_dict.items():
         mod_obj.unique_name = modelNamesUnique[count] # add attribute 'unique_name'
         count += 1
 
@@ -88,13 +89,20 @@ def spawn_model(model_object):
     spawn_pose.position.x = model_object.pose[0]
     spawn_pose.position.y = model_object.pose[1]
     spawn_pose.position.z = model_object.pose[2]
-    # conversion from Euler angles (RPY) in degrees to radians
-    degrees2rad = pi / 180.0
-    roll = model_object.pose[3] * degrees2rad
-    pitch = model_object.pose[4] * degrees2rad
-    yaw = model_object.pose[5] * degrees2rad
-    # create list that contains conversion from Euler to Quaternions
-    quat = quaternion_from_euler (roll,pitch,yaw)
+    if hasattr(model_object, 'quaternion') and model_object.quaternion:
+        quat = model_object.pose[3:]
+    else:
+        # conversion from Euler angles (RPY) in degrees or radians
+        roll = model_object.pose[3]
+        pitch = model_object.pose[4]
+        yaw = model_object.pose[5]
+        if not hasattr(model_object, 'radians') or not model_object.radians:
+            degrees2rad = pi / 180.0
+            roll *= degrees2rad
+            pitch *= degrees2rad
+            yaw *= degrees2rad
+        # create list that contains conversion from Euler to Quaternions
+        quat = quaternion_from_euler(roll, pitch, yaw)
     spawn_pose.orientation.x = quat[0]
     spawn_pose.orientation.y = quat[1]
     spawn_pose.orientation.z = quat[2]
@@ -122,7 +130,7 @@ def spawn_model(model_object):
             rospy.wait_for_service('gazebo/spawn_sdf_model',5.0)
             # create a handle for calling the service
             spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
-        except (rospy.ServiceException, rospy.ROSException), e:
+        except (rospy.ServiceException, rospy.ROSException) as e:
             rospy.logerr("Service call failed: %s" % (e,))
 
     elif model_object.type == "urdf":
@@ -141,7 +149,7 @@ def spawn_model(model_object):
             rospy.wait_for_service('gazebo/spawn_urdf_model')
             # create a handle for calling the service
             spawn_model_prox = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
-        except (rospy.ServiceException, rospy.ROSException), e:
+        except (rospy.ServiceException, rospy.ROSException) as e:
             rospy.logerr("Service call failed: %s" % (e,))
 
     else:
@@ -149,7 +157,7 @@ def spawn_model(model_object):
 
     try:
         # use handle / local proxy just like a normal function and call it
-        print "Now spawning: %s" % model_object.unique_name
+        print("Now spawning: %s" % model_object.unique_name)
         res = spawn_model_prox(model_object.unique_name,model_xml, '',spawn_pose, 'world')
         # evaluate response
         if res.success == True:
@@ -182,9 +190,10 @@ if __name__ == '__main__':
                 spawn_model(m[key])
                 # remove item form dict
                 del m[key]
-                # sleep for duration (seconds, nsecs)
-                d = rospy.Duration(time_interval)
-                rospy.sleep(d)
+                if time_interval > 0:
+                    # sleep for duration (seconds, nsecs)
+                    d = rospy.Duration(time_interval)
+                    rospy.sleep(d)
             # to silence "sys.excepthook is missing" error
             sys.stdout.flush() 
         except:
@@ -193,6 +202,7 @@ if __name__ == '__main__':
         ## spawn all models parsed from yaml file iterating through the dict (unordered sequence, as they were stored)
         for key in m:
             spawn_model(m[key])
-            # sleep for duration (seconds, nsecs)
-            d = rospy.Duration(time_interval)
-            rospy.sleep(d)
+            if time_interval > 0:
+                # sleep for duration (seconds, nsecs)
+                d = rospy.Duration(time_interval)
+                rospy.sleep(d)
